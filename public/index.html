@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ghanim Book Reader</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============ LIBRARY ============ -->
+  <section id="library-view" class="view">
+    <header class="topbar">
+      <div class="brand"><img src="icon.svg" alt="" width="28" height="28" /> Ghanim Book Reader</div>
+      <label class="upload-btn btn ghost">
+        Open a .txt file
+        <input id="file-input" type="file" accept=".txt,.md,text/plain" hidden />
+      </label>
+    </header>
+
+    <div class="hero">
+      <h1>Find a book. Read it. Or let it read to you.</h1>
+      <p>Search over 70,000 free public-domain ebooks from Project Gutenberg.</p>
+      <form id="search-form" class="search">
+        <input id="search-input" type="search" placeholder="Search by title or author, e.g. Sherlock Holmes" autocomplete="off" />
+        <select id="lang-select" aria-label="Language">
+          <option value="">Any language</option>
+          <option value="en">English</option>
+          <option value="fr">French</option>
+          <option value="de">German</option>
+          <option value="es">Spanish</option>
+          <option value="it">Italian</option>
+          <option value="pt">Portuguese</option>
+          <option value="nl">Dutch</option>
+        </select>
+        <button class="btn primary" type="submit">Search</button>
+      </form>
+      <div class="chips" id="topic-chips">
+        <button data-topic="adventure">Adventure</button>
+        <button data-topic="science fiction">Sci-fi</button>
+        <button data-topic="mystery">Mystery</button>
+        <button data-topic="romance">Romance</button>
+        <button data-topic="children">Children</button>
+        <button data-topic="poetry">Poetry</button>
+        <button data-topic="philosophy">Philosophy</button>
+        <button data-topic="history">History</button>
+      </div>
+    </div>
+
+    <section id="shelf-section" hidden>
+      <h2>Continue reading</h2>
+      <div id="shelf" class="grid"></div>
+    </section>
+
+    <section>
+      <h2 id="results-title">Popular books</h2>
+      <div id="results" class="grid"></div>
+      <p id="results-status" class="status"></p>
+      <div class="pager">
+        <button id="prev-page" class="btn ghost" hidden>← Previous</button>
+        <button id="next-page" class="btn ghost" hidden>Next →</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============ READER ============ -->
+  <section id="reader-view" class="view" hidden>
+    <header class="topbar reader-bar">
+      <button id="back-btn" class="btn ghost" title="Back to library">← Library</button>
+      <div class="book-title">
+        <strong id="book-title"></strong>
+        <span id="book-author"></span>
+      </div>
+      <div class="bar-actions">
+        <button id="settings-btn" class="btn ghost" aria-expanded="false" title="Reading settings">Aa</button>
+        <button id="ai-btn" class="btn ghost" aria-expanded="false" title="AI assistant">✨ Ask AI</button>
+      </div>
+    </header>
+
+    <div id="settings-panel" class="popover" hidden>
+      <label>Text size <input id="font-size" type="range" min="14" max="30" step="1" /></label>
+      <label>Font
+        <select id="font-family">
+          <option value="serif">Serif</option>
+          <option value="sans">Sans-serif</option>
+          <option value="dyslexic">Easy-read (wide)</option>
+        </select>
+      </label>
+      <div class="theme-row" role="group" aria-label="Theme">
+        <button data-theme="light">Light</button>
+        <button data-theme="sepia">Sepia</button>
+        <button data-theme="dark">Dark</button>
+      </div>
+    </div>
+
+    <div class="reader-layout">
+      <main id="page" class="page" tabindex="0" aria-live="off"></main>
+
+      <aside id="ai-panel" class="ai-panel" hidden>
+        <div class="ai-head">
+          <strong>✨ Reading assistant</strong>
+          <button id="ai-close" class="btn ghost small" aria-label="Close">✕</button>
+        </div>
+        <p class="ai-note">Asks about the page you're on.</p>
+        <div class="ai-quick">
+          <button data-action="summarize">Summarize page</button>
+          <button data-action="explain">Explain simply</button>
+          <button data-action="characters">Who's who?</button>
+          <button data-action="vocab">Hard words</button>
+        </div>
+        <div id="ai-log" class="ai-log"></div>
+        <form id="ai-form" class="ai-form">
+          <input id="ai-input" placeholder="Ask anything about this page…" autocomplete="off" />
+          <button class="btn primary" type="submit">Ask</button>
+        </form>
+      </aside>
+    </div>
+
+    <footer class="controls">
+      <div class="nav">
+        <button id="prev-btn" class="btn ghost" title="Previous page (←)">‹</button>
+        <span id="page-info"></span>
+        <button id="next-btn" class="btn ghost" title="Next page (→)">›</button>
+      </div>
+      <input id="progress" type="range" min="0" max="0" value="0" aria-label="Jump to page" />
+      <div class="tts">
+        <button id="tts-play" class="btn primary" title="Read aloud (space)">▶ Read to me</button>
+        <button id="tts-stop" class="btn ghost" title="Stop" disabled>■</button>
+        <select id="tts-voice" aria-label="Voice"></select>
+        <label class="rate">Speed <input id="tts-rate" type="range" min="0.5" max="2" step="0.1" /> <span id="tts-rate-val"></span></label>
+      </div>
+    </footer>
+  </section>
+
+  <div id="loading" class="loading" hidden><div class="spinner"></div><span id="loading-text">Loading…</span></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

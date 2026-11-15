@@ -1,0 +1,18 @@
+{
+  "name": "ghanim-book-reader",
+  "version": "1.0.0",
+  "description": "A free ebook library and reader with read-aloud and an AI reading assistant",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0"
+  }
+}

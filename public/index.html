@@ -27,7 +27,7 @@
     <div class="hero">
       <div class="stars" aria-hidden="true"></div>
       <h1 id="hero-title">Find a book. Read it. Or let it read to you.</h1>
-      <p id="hero-sub">Search over 70,000 free public-domain ebooks from Project Gutenberg.</p>
+      <p id="hero-sub">Search hundreds of thousands of free books from Project Gutenberg and Open Library.</p>
       <form id="search-form" class="search">
         <input id="search-input" type="search" placeholder="Search by title or author, e.g. Peter Rabbit" autocomplete="off" />
         <select id="lang-select" aria-label="Language">
@@ -39,6 +39,11 @@
           <option value="it">Italian</option>
           <option value="pt">Portuguese</option>
           <option value="nl">Dutch</option>
+        </select>
+        <select id="source-select" aria-label="Library">
+          <option value="">All libraries</option>
+          <option value="gutenberg">Project Gutenberg</option>
+          <option value="openlibrary">Open Library</option>
         </select>
         <button class="btn primary" type="submit">Search</button>
       </form>

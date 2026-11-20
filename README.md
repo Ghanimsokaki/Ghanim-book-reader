@@ -15,7 +15,12 @@ A free ebook place to **search**, **read**, have the book **read aloud to you**,
 
 ## 📖 Everything else
 
-- **Search 70,000+ free ebooks**: uses the [Gutendex](https://gutendex.com) API for Project Gutenberg's public-domain library, with language and topic filters.
+- **Two big free libraries, searched together**:
+  - [Project Gutenberg](https://www.gutenberg.org), through the [Gutendex](https://gutendex.com) API, has 70,000+ clean ebooks.
+  - [Open Library](https://openlibrary.org) has hundreds of thousands of public-domain books, read from the [Internet Archive](https://archive.org)'s scans.
+
+  You can filter by library, language and topic. Each book shows which library it comes from.
+- **Keeps working when a library is down**: if one library is slow or offline, search still shows results from the other, and Gutenberg books download from the official mirror (gutenberg.pglaf.org). A library that just failed is skipped for a few minutes, so visitors don't keep waiting for it.
 - **Comfortable reader**: pages, text size, an easy-read font, and Light, Sepia, Dark and Night themes. Use the arrow keys to turn pages.
 - **Read to me**: press ▶ or the space bar. It highlights the paragraph being read and turns pages for you. Pick a voice and speed, or tap any paragraph to start there. It uses your browser's built-in voices, so it's free.
 - **AI reading assistant**: summarize the page, explain it simply, who's who, hard words, or ask anything.
@@ -62,8 +67,8 @@ Optional environment variables:
 ```
 public/            the web app (HTML, CSS, JavaScript; no build step)
 api/               one file per endpoint (Vercel functions)
-  search.js        GET  /api/search?q=&lang=&topic=&page=   search the Gutenberg catalog
-  book/[id].js     GET  /api/book/:id                       a book's text, boilerplate removed
+  search.js        GET  /api/search?q=&lang=&topic=&page=&source=   search Gutenberg + Open Library
+  book/[id].js     GET  /api/book/14838 or /api/book/OL123W      a book's text, cleaned up
   ai.js            POST /api/ai                             streamed answer about a passage
   story.js         POST /api/story                          streamed new bedtime story
   status.js        GET  /api/status                         are the AI features on?
@@ -71,4 +76,4 @@ lib/               code shared by the endpoints
 server.js          local development server that serves public/ and api/
 ```
 
-The server downloads books for the browser because Project Gutenberg's files can't be fetched directly from a web page, and it keeps the AI key private. Search results and books are cached by Vercel's CDN, so popular books open quickly.
+The server downloads books for the browser because the libraries' files can't be fetched directly from a web page, and it keeps the AI key private. Search results and books are cached by Vercel's CDN, so popular books open quickly.

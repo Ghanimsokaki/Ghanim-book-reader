@@ -6,19 +6,24 @@ const BEDTIME_RATE = 0.85; // a calmer, slower voice for bedtime
 
 // Hand-picked classics from Project Gutenberg that work well at bedtime.
 const BEDTIME_BOOKS = [
-  { id: 14838, title: "The Tale of Peter Rabbit", author: "Beatrix Potter" },
-  { id: 11757, title: "The Velveteen Rabbit", author: "Margery Williams" },
-  { id: 2781, title: "Just So Stories", author: "Rudyard Kipling" },
-  { id: 2591, title: "Grimms' Fairy Tales", author: "Jacob and Wilhelm Grimm" },
-  { id: 1597, title: "Andersen's Fairy Tales", author: "Hans Christian Andersen" },
-  { id: 21, title: "Aesop's Fables", author: "Aesop" },
-  { id: 11, title: "Alice's Adventures in Wonderland", author: "Lewis Carroll" },
-  { id: 16, title: "Peter Pan", author: "J. M. Barrie" },
-  { id: 55, title: "The Wonderful Wizard of Oz", author: "L. Frank Baum" },
-  { id: 236, title: "The Jungle Book", author: "Rudyard Kipling" },
-  { id: 500, title: "The Adventures of Pinocchio", author: "Carlo Collodi" },
-  { id: 113, title: "The Secret Garden", author: "Frances Hodgson Burnett" },
-].map((b) => ({ ...b, cover: `https://www.gutenberg.org/cache/epub/${b.id}/pg${b.id}.cover.medium.jpg` }));
+  { id: 14838, olCover: 289591, title: "The Tale of Peter Rabbit", author: "Beatrix Potter" },
+  { id: 11757, olCover: 1340606, title: "The Velveteen Rabbit", author: "Margery Williams" },
+  { id: 2781, olCover: 36215, title: "Just So Stories", author: "Rudyard Kipling" },
+  { id: 2591, olCover: 7895815, title: "Grimms' Fairy Tales", author: "Jacob and Wilhelm Grimm" },
+  { id: 1597, olCover: 320591, title: "Andersen's Fairy Tales", author: "Hans Christian Andersen" },
+  { id: 21, olCover: 5796201, title: "Aesop's Fables", author: "Aesop" },
+  { id: 11, olCover: 10527843, title: "Alice's Adventures in Wonderland", author: "Lewis Carroll" },
+  { id: 16, olCover: 8237052, title: "Peter Pan", author: "J. M. Barrie" },
+  { id: 55, olCover: 552443, title: "The Wonderful Wizard of Oz", author: "L. Frank Baum" },
+  { id: 236, olCover: null, title: "The Jungle Book", author: "Rudyard Kipling" },
+  { id: 500, olCover: 11365679, title: "The Adventures of Pinocchio", author: "Carlo Collodi" },
+  { id: 113, olCover: 12622062, title: "The Secret Garden", author: "Frances Hodgson Burnett" },
+].map((b) => ({ ...b, source: "gutenberg", cover: b.olCover ? `https://covers.openlibrary.org/b/id/${b.olCover}-M.jpg` : null }));
+
+const isRemoteKey = (key) => key.startsWith("g") || key.startsWith("o");
+const remoteKey = (id) => (/^OL\d+W$/.test(id) ? "o" : "g") + id;
+const LANG2 = { eng: "en", fre: "fr", fra: "fr", ger: "de", deu: "de", spa: "es", ita: "it", por: "pt", dut: "nl", nld: "nl" };
+const SOURCE_LABEL = { gutenberg: "Project Gutenberg", openlibrary: "Open Library" };
 
 const store = {
   get(key, fallback) {
@@ -150,7 +155,7 @@ function applySettings() {
     : "Find a book. Read it. Or let it read to you.";
   $("#hero-sub").textContent = settings.bedtime
     ? "Pick a classic, or make up a new one. It reads aloud softly, then fades out when it's time to sleep."
-    : "Search over 70,000 free public-domain ebooks from Project Gutenberg.";
+    : "Search hundreds of thousands of free books from Project Gutenberg and Open Library.";
   document.querySelector('meta[name="theme-color"]').content = getComputedStyle(root).getPropertyValue("--surface").trim() || "#ffffff";
   store.set("settings", settings);
 }
@@ -193,6 +198,9 @@ function bookCard(book, onClick, progress) {
       { class: "info" },
       el("div", { class: "title" }, book.title),
       el("div", { class: "author" }, (book.authors || [book.author]).filter(Boolean).join(", ") || "Unknown author"),
+      book.source && progress == null
+        ? el("div", { class: `source ${book.source}` }, SOURCE_LABEL[book.source] + (book.year ? ` · ${book.year}` : ""))
+        : null,
       progress != null
         ? el("div", { class: "progress-bar" }, el("span", { style: `width:${Math.round(progress * 100)}%` }))
         : null,
@@ -209,7 +217,7 @@ function renderBedtimeShelf() {
   );
   $("#bedtime-shelf").replaceChildren(
     makeCard,
-    ...BEDTIME_BOOKS.map((b) => bookCard(b, () => (location.hash = `#/book/${b.id}`))),
+    ...BEDTIME_BOOKS.map((b) => bookCard({ ...b, source: null }, () => (location.hash = `#/book/${b.id}`))),
   );
 }
 
@@ -227,6 +235,8 @@ function renderShelf() {
 async function runSearch() {
   const { q, lang, topic, page } = state.search;
   const params = new URLSearchParams();
+  const source = $("#source-select").value;
+  if (source) params.set("source", source);
   if (q) params.set("q", q);
   if (lang) params.set("lang", lang);
   if (topic) params.set("topic", topic);
@@ -243,13 +253,17 @@ async function runSearch() {
     $("#results").replaceChildren(
       ...data.results.map((b) => bookCard(b, () => (location.hash = `#/book/${b.id}`))),
     );
-    $("#results-status").textContent = data.results.length
+    const summary = data.results.length
       ? `${data.count.toLocaleString()} books found · page ${page}`
-      : "No books found. Try another search.";
+      : "No books found. Try another search, or another library.";
+    $("#results-status").textContent = [summary, ...(data.warnings || [])].join("  ·  ");
     $("#prev-page").hidden = page <= 1;
     $("#next-page").hidden = !data.hasNext;
   } catch (err) {
-    $("#results-status").textContent = "Couldn't reach the book catalog: " + err.message;
+    $("#results-status").replaceChildren(
+      "Couldn't search right now: " + err.message + " ",
+      el("button", { class: "btn ghost small", onclick: runSearch }, "Try again"),
+    );
   }
 }
 
@@ -325,19 +339,21 @@ function loadBook(book, startPage = 0) {
   saveProgress();
 }
 
-async function openGutenberg(id) {
-  const saved = store.get("shelf", []).find((s) => s.key === `g${id}`);
-  showLoading("Opening the book…");
+async function openRemoteBook(id) {
+  const key = remoteKey(id);
+  const saved = store.get("shelf", []).find((s) => s.key === key);
+  showLoading(key.startsWith("o") ? "Opening the book from the Internet Archive…" : "Opening the book…");
   try {
     const { meta, text } = await api(`/api/book/${id}`);
     loadBook(
       {
-        key: `g${id}`,
+        key,
         id,
         title: meta.title,
         author: meta.authors.join(", "),
         cover: meta.cover,
-        lang: meta.languages[0] || "en",
+        lang: LANG2[meta.languages[0]] || (meta.languages[0] || "en").slice(0, 2),
+        scanned: meta.source === "openlibrary",
         text,
       },
       saved ? saved.page : 0,
@@ -351,7 +367,7 @@ async function openGutenberg(id) {
 }
 
 function openFromShelf(item) {
-  if (item.key.startsWith("g")) {
+  if (isRemoteKey(item.key)) {
     location.hash = `#/book/${item.id}`;
   } else {
     const text = store.get("file:" + item.key, null);
@@ -404,7 +420,7 @@ function saveProgress() {
     page: state.page, pages: state.pages.length, updated: Date.now(),
   });
   // Keep the 12 most recent books; drop stored text for local books that fall off the shelf.
-  for (const old of shelf.slice(12)) if (!old.key.startsWith("g")) store.remove("file:" + old.key);
+  for (const old of shelf.slice(12)) if (!isRemoteKey(old.key)) store.remove("file:" + old.key);
   shelf = shelf.slice(0, 12);
   store.set("shelf", shelf);
 }
@@ -423,6 +439,9 @@ function renderPage() {
       speakFrom(i);
     });
     page.append(node);
+  }
+  if (state.page === 0 && state.book.scanned) {
+    page.prepend(el("p", { class: "scan-note" }, "📜 Scanned from a printed book by the Internet Archive, so a few words may be misread."));
   }
   if (state.page === state.pages.length - 1) page.append(el("p", { class: "page-end" }, "🌙 The End"));
   page.scrollTop = 0;
@@ -943,8 +962,8 @@ function showView(name) {
 function route() {
   const m = location.hash.match(/^#\/(book|file)\/([\w-]+)/);
   if (!m) return showView("library");
-  if (state.book && state.book.key === (m[1] === "book" ? `g${m[2]}` : m[2])) return showView("reader");
-  if (m[1] === "book") openGutenberg(m[2]);
+  if (state.book && state.book.key === (m[1] === "book" ? remoteKey(m[2]) : m[2])) return showView("reader");
+  if (m[1] === "book") openRemoteBook(m[2]);
   else openLocalFile(m[2]);
 }
 
@@ -970,6 +989,7 @@ function init() {
     $("#search-input").value = "";
     runSearch();
   });
+  $("#source-select").addEventListener("change", () => { state.search.page = 1; runSearch(); });
   $("#prev-page").addEventListener("click", () => { state.search.page--; runSearch(); });
   $("#next-page").addEventListener("click", () => { state.search.page++; runSearch(); });
   $("#file-input").addEventListener("change", (e) => { handleFile(e.target.files[0]); e.target.value = ""; });

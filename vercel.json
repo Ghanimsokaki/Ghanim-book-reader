@@ -4,7 +4,17 @@
   "buildCommand": null,
   "outputDirectory": "public",
   "functions": {
-    "api/ai.js": { "maxDuration": 60 },
-    "api/story.js": { "maxDuration": 60 }
+    "api/ai.js": {
+      "maxDuration": 60
+    },
+    "api/story.js": {
+      "maxDuration": 60
+    },
+    "api/search.js": {
+      "maxDuration": 30
+    },
+    "api/book/[id].js": {
+      "maxDuration": 60
+    }
   }
 }

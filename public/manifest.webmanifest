@@ -1,0 +1,10 @@
+{
+  "name": "Ghanim Book Reader",
+  "short_name": "Bedtime Reader",
+  "description": "Free ebooks and bedtime stories that read themselves aloud.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#11142b",
+  "theme_color": "#11142b",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

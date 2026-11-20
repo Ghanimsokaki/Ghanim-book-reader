@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Free ebooks and bedtime stories that read themselves aloud, with a sleep timer, soft sounds and an AI storyteller." />
+  <meta name="theme-color" content="#11142b" />
   <title>Ghanim Book Reader</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,17 +15,21 @@
   <section id="library-view" class="view">
     <header class="topbar">
       <div class="brand"><img src="icon.svg" alt="" width="28" height="28" /> Ghanim Book Reader</div>
-      <label class="upload-btn btn ghost">
-        Open a .txt file
-        <input id="file-input" type="file" accept=".txt,.md,text/plain" hidden />
-      </label>
+      <div class="bar-actions">
+        <button id="bedtime-toggle" class="btn ghost" aria-pressed="false" title="Night colors and a calm, slower voice">🌙 Bedtime mode</button>
+        <label class="upload-btn btn ghost">
+          Open .txt
+          <input id="file-input" type="file" accept=".txt,.md,text/plain" hidden />
+        </label>
+      </div>
     </header>
 
     <div class="hero">
-      <h1>Find a book. Read it. Or let it read to you.</h1>
-      <p>Search over 70,000 free public-domain ebooks from Project Gutenberg.</p>
+      <div class="stars" aria-hidden="true"></div>
+      <h1 id="hero-title">Find a book. Read it. Or let it read to you.</h1>
+      <p id="hero-sub">Search over 70,000 free public-domain ebooks from Project Gutenberg.</p>
       <form id="search-form" class="search">
-        <input id="search-input" type="search" placeholder="Search by title or author, e.g. Sherlock Holmes" autocomplete="off" />
+        <input id="search-input" type="search" placeholder="Search by title or author, e.g. Peter Rabbit" autocomplete="off" />
         <select id="lang-select" aria-label="Language">
           <option value="">Any language</option>
           <option value="en">English</option>
@@ -36,16 +43,22 @@
         <button class="btn primary" type="submit">Search</button>
       </form>
       <div class="chips" id="topic-chips">
+        <button data-topic="fairy tales">Fairy tales</button>
+        <button data-topic="children">Children</button>
+        <button data-topic="animals">Animals</button>
         <button data-topic="adventure">Adventure</button>
+        <button data-topic="poetry">Poetry</button>
+        <button data-topic="fables">Fables</button>
         <button data-topic="science fiction">Sci-fi</button>
         <button data-topic="mystery">Mystery</button>
-        <button data-topic="romance">Romance</button>
-        <button data-topic="children">Children</button>
-        <button data-topic="poetry">Poetry</button>
-        <button data-topic="philosophy">Philosophy</button>
-        <button data-topic="history">History</button>
       </div>
     </div>
+
+    <section id="bedtime-section">
+      <h2>🌙 Bedtime stories</h2>
+      <p class="section-sub">Classic stories for tonight, or a brand-new one made just for your child.</p>
+      <div id="bedtime-shelf" class="grid"></div>
+    </section>
 
     <section id="shelf-section" hidden>
       <h2>Continue reading</h2>
@@ -66,19 +79,20 @@
   <!-- ============ READER ============ -->
   <section id="reader-view" class="view" hidden>
     <header class="topbar reader-bar">
-      <button id="back-btn" class="btn ghost" title="Back to library">← Library</button>
+      <button id="back-btn" class="btn ghost" title="Back to library">← <span class="hide-sm">Library</span></button>
       <div class="book-title">
         <strong id="book-title"></strong>
         <span id="book-author"></span>
       </div>
       <div class="bar-actions">
+        <button id="night-btn" class="btn ghost" aria-expanded="false" title="Bedtime: sleep timer, soft sounds, dim screen">🌙 <span id="timer-label" class="hide-sm">Bedtime</span></button>
         <button id="settings-btn" class="btn ghost" aria-expanded="false" title="Reading settings">Aa</button>
-        <button id="ai-btn" class="btn ghost" aria-expanded="false" title="AI assistant">✨ Ask AI</button>
+        <button id="ai-btn" class="btn ghost" aria-expanded="false" title="AI assistant">✨<span class="hide-sm"> Ask AI</span></button>
       </div>
     </header>
 
     <div id="settings-panel" class="popover" hidden>
-      <label>Text size <input id="font-size" type="range" min="14" max="30" step="1" /></label>
+      <label>Text size <input id="font-size" type="range" min="14" max="34" step="1" /></label>
       <label>Font
         <select id="font-family">
           <option value="serif">Serif</option>
@@ -90,11 +104,46 @@
         <button data-theme="light">Light</button>
         <button data-theme="sepia">Sepia</button>
         <button data-theme="dark">Dark</button>
+        <button data-theme="night">Night</button>
       </div>
     </div>
 
+    <div id="night-panel" class="popover" hidden>
+      <strong class="popover-title">🌙 Bedtime</strong>
+      <label>Sleep timer
+        <select id="sleep-timer">
+          <option value="0">Off</option>
+          <option value="story">At the end of this story</option>
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="20">20 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="60">1 hour</option>
+        </select>
+      </label>
+      <p class="hint">The voice and sounds fade out gently when the timer ends.</p>
+      <label>Soft sounds
+        <select id="sound-select">
+          <option value="">Off</option>
+          <option value="rain">Gentle rain</option>
+          <option value="ocean">Ocean waves</option>
+          <option value="brown">Soft hum (brown noise)</option>
+        </select>
+      </label>
+      <label>Sound volume <input id="sound-volume" type="range" min="0" max="1" step="0.05" /></label>
+      <button id="dim-btn" class="btn primary">Dim the screen</button>
+      <p class="hint">Keeps reading with the screen dark. Tap anywhere to wake it.</p>
+    </div>
+
     <div class="reader-layout">
-      <main id="page" class="page" tabindex="0" aria-live="off"></main>
+      <main class="page-wrap">
+        <div id="toc-bar" class="toc-bar" hidden>
+          <select id="toc" aria-label="Jump to a story or chapter"></select>
+        </div>
+        <div id="page" class="page" tabindex="0"></div>
+      </main>
 
       <aside id="ai-panel" class="ai-panel" hidden>
         <div class="ai-head">
@@ -103,6 +152,7 @@
         </div>
         <p class="ai-note">Asks about the page you're on.</p>
         <div class="ai-quick">
+          <button data-action="retell">🧸 Retell for little ones</button>
           <button data-action="summarize">Summarize page</button>
           <button data-action="explain">Explain simply</button>
           <button data-action="characters">Who's who?</button>
@@ -127,11 +177,57 @@
         <button id="tts-play" class="btn primary" title="Read aloud (space)">▶ Read to me</button>
         <button id="tts-stop" class="btn ghost" title="Stop" disabled>■</button>
         <select id="tts-voice" aria-label="Voice"></select>
-        <label class="rate">Speed <input id="tts-rate" type="range" min="0.5" max="2" step="0.1" /> <span id="tts-rate-val"></span></label>
+        <label class="rate">Speed <input id="tts-rate" type="range" min="0.5" max="1.6" step="0.05" /> <span id="tts-rate-val"></span></label>
       </div>
     </footer>
   </section>
 
+  <!-- ============ STORY MAKER ============ -->
+  <dialog id="story-dialog" class="dialog">
+    <form id="story-form" method="dialog">
+      <h2>✨ Make up a bedtime story</h2>
+      <p class="section-sub">A brand-new, gentle story, written for your child and read aloud.</p>
+      <label>Child's name <span class="optional">(optional)</span>
+        <input id="story-name" maxlength="40" placeholder="e.g. Maya" autocomplete="off" />
+      </label>
+      <label>What should it be about?
+        <input id="story-about" maxlength="300" placeholder="e.g. a sleepy dragon who is afraid of the dark" autocomplete="off" />
+      </label>
+      <div class="chips left" id="story-ideas">
+        <button type="button">a little bear looking for the moon</button>
+        <button type="button">a tiny dragon who can't fly yet</button>
+        <button type="button">a submarine trip to see glowing fish</button>
+        <button type="button">a rabbit's picnic under the stars</button>
+        <button type="button">a robot learning to say goodnight</button>
+      </div>
+      <div class="row">
+        <label>Age
+          <select id="story-age">
+            <option value="3-5">3 to 5</option>
+            <option value="6-8">6 to 8</option>
+            <option value="9-12">9 to 12</option>
+          </select>
+        </label>
+        <label>Length
+          <select id="story-length">
+            <option value="short">Short (about 3 min)</option>
+            <option value="medium" selected>Medium (about 5 min)</option>
+            <option value="long">Long (about 9 min)</option>
+          </select>
+        </label>
+      </div>
+      <div id="story-preview" class="story-preview" hidden></div>
+      <p id="story-error" class="error-text" hidden></p>
+      <div class="dialog-actions">
+        <button type="button" id="story-cancel" class="btn ghost">Cancel</button>
+        <button type="submit" id="story-go" class="btn primary">Write my story</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="dim-overlay" class="dim-overlay" hidden>
+    <p id="dim-text">Tap to wake the screen</p>
+  </div>
   <div id="loading" class="loading" hidden><div class="spinner"></div><span id="loading-text">Loading…</span></div>
   <script src="app.js" type="module"></script>
 </body>
